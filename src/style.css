@@ -31,4 +31,9 @@ body {
     flex: none;
     border-bottom: 1px solid black;
     border-right: 1px solid black;
+    user-select: none;
+}
+
+.hover {
+    background: #ccc;
 }
