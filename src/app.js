@@ -1,62 +1,77 @@
 const container = document.querySelector(".container");
-const setCellsAmount = document.querySelector("#set-cells-amount");
+const setCellsAmount = document.querySelector(".set-cells-amount");
 let cellsCount = 16 ** 2;
-createGameField();
 
-container.addEventListener("mousedown", event => {
-    event.target.classList.add("hover");
-    container.addEventListener("mousemove", addHovering);
-});
-
-window.addEventListener("mouseup", event => {
-    container.removeEventListener("mousemove", addHovering);
-});
-
-setCellsAmount.addEventListener("click", event => {
-    let userInput = +prompt("Input the cells amount no more than 100:", 0);
-
-    if (userInput > 100) {
-        alert("It's too much, input another number");
-        return;
-    } else if (userInput < 8) {
-        alert("It's too little, input another number");
-        return;
-    }
-
-    cellsCount = userInput ** 2;
-    createGameField();
-});
-
-window.addEventListener("resize", event => {
-    createGameField();
-});
-
-function addHovering(event) {
-    if (event.target === container) {
-        return;
-    }
-    event.target.classList.add("hover");
-}
-
-function createGameField() {
-    removeCells();
-
-    for (let i = 0; i < cellsCount; i++) {
-        createCell();
-    }
-}
-
-function removeCells() {
-    for (let i = container.children.length - 1; i >= 0; i--) {
-        container.children[i].parentElement.removeChild(container.children[i]);
-    }
+function setCellWidth() {
+  const containerWidth = Number.parseInt(
+    window.getComputedStyle(container).width
+  );
+  const cellWidth = containerWidth / Math.sqrt(cellsCount) + "px";
+  document.documentElement.style.setProperty("--cell-width", cellWidth);
 }
 
 function createCell() {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    const containerWidth = Number.parseInt(
-        window.getComputedStyle(container).width);
-    cell.style.width = containerWidth / Math.sqrt(cellsCount) + "px";
-    container.appendChild(cell);
+  const cell = document.createElement("div");
+  cell.classList.add("cell");
+  setCellWidth();
+
+  return cell;
 }
+
+function renderCells() {
+  const cell = createCell();
+  for (let i = 0; i < cellsCount; i++) {
+    container.append(cell.cloneNode(true));
+  }
+}
+
+const removeCell = (cellIndex) => container.children[cellIndex].remove();
+
+function removeCells() {
+  const cellsCount = container.children.length;
+  for (let i = cellsCount - 1; i >= 0; i--) {
+    removeCell(i);
+  }
+}
+
+function highlight(event) {
+  const { target } = event;
+  if (target !== container) target.classList.add("highlighted");
+}
+
+function rerenderCells() {
+  removeCells();
+  renderCells();
+}
+
+renderCells();
+
+container.addEventListener("mousedown", (event) => {
+  highlight(event);
+  container.addEventListener("mousemove", highlight);
+});
+
+window.addEventListener("mouseup", () => {
+  container.removeEventListener("mousemove", highlight);
+});
+
+setCellsAmount.addEventListener("click", () => {
+  const newCellsCount = Number(
+    prompt("Input the cells amount no more than 100:")
+  );
+
+  if (!newCellsCount) return alert("Please enter a valid number");
+
+  if (newCellsCount > 100) {
+    return alert("The maximum allowed number of cells is 100");
+  }
+
+  if (newCellsCount < 8) {
+    return alert("The minimum allowed number of cells is 8");
+  }
+
+  cellsCount = newCellsCount ** 2;
+  rerenderCells();
+});
+
+window.addEventListener("resize", setCellWidth);
