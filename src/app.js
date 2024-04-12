@@ -1,4 +1,4 @@
-const container = document.querySelector(".container");
+const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
 let cellsCount = 16 ** 2;
 
@@ -56,9 +56,7 @@ window.addEventListener("mouseup", () => {
 });
 
 setCellsAmount.addEventListener("click", () => {
-  const newCellsCount = Number(
-    prompt("Enter the cells amount per side")
-  );
+  const newCellsCount = Number(prompt("Enter the cells amount per side"));
 
   if (!newCellsCount) return alert("Please enter a valid number");
 
