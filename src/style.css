@@ -1,5 +1,6 @@
 :root {
   --cell-width: 0px;
+  --cell-hue: 0;
 }
 
 *,
@@ -43,8 +44,11 @@ footer {
 }
 
 .game-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
   padding: 20px;
-  border: 5px solid hsl(195, 97%, 64%);
+  border: 5px solid hsl(195, 91%, 58%);
 }
 
 .setting-button {
@@ -55,6 +59,10 @@ footer {
   background: hsl(195, 91%, 58%);
   border-radius: 10px;
   cursor: pointer;
+}
+
+.setting-button:hover {
+  background: hsl(195, 91%, 50%);
 }
 
 .cells-container {
@@ -85,4 +93,8 @@ footer {
 footer {
   gap: 10px;
   font-size: 18px;
+}
+
+.footer__link {
+  color: hsl(0, 0%, 0%);
 }
