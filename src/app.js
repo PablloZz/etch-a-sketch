@@ -1,6 +1,14 @@
-const container = document.querySelector(".container");
+const INITIAL_CELLS_COUNT = 16 ** 2;
+const Mode = {
+  INITIAL: "initial",
+  RAINBOW: "rainbow",
+};
+const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
-let cellsCount = 16 ** 2;
+const setRainbowMode = document.querySelector(".set-rainbow-mode");
+const resetMode = document.querySelector(".reset-mode");
+let cellsCount = INITIAL_CELLS_COUNT;
+let currentMode = Mode.INITIAL;
 
 function setCellWidth() {
   const containerWidth = Number.parseInt(
@@ -13,6 +21,7 @@ function setCellWidth() {
 function createCell() {
   const cell = document.createElement("div");
   cell.classList.add("cell");
+  cell.style.background = "hsl(0, 0%, 100%)";
   setCellWidth();
 
   return cell;
@@ -34,9 +43,30 @@ function removeCells() {
   }
 }
 
+function handleRainbowMode(cell) {
+  const colorStep = 15;
+  const currentHue = Number(
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue("--cell-hue")
+  );
+  const updatedHue = currentHue + colorStep;
+  document.documentElement.style.setProperty("--cell-hue", updatedHue);
+  cell.style.background = `hsl(${updatedHue}, 100%, 50%)`;
+}
+
 function highlight(event) {
   const { target } = event;
-  if (target !== container) target.classList.add("highlighted");
+
+  if (target !== container) {
+    if (currentMode === Mode.INITIAL) {
+      target.style.background = "hsl(0, 0%, 80%)";
+    }
+
+    if (currentMode === Mode.RAINBOW) {
+      handleRainbowMode(target);
+    }
+  }
 }
 
 function rerenderCells() {
@@ -48,25 +78,27 @@ renderCells();
 
 container.addEventListener("mousedown", (event) => {
   highlight(event);
-  container.addEventListener("mousemove", highlight);
+  const children = Array.from(container.children);
+  children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
 });
 
 window.addEventListener("mouseup", () => {
-  container.removeEventListener("mousemove", highlight);
+  const children = Array.from(container.children);
+  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
 });
 
 setCellsAmount.addEventListener("click", () => {
-  const newCellsCount = Number(
-    prompt("Input the cells amount no more than 100:")
-  );
+  const MAX_CELLS = 100;
+  const MIN_CELLS = 8;
+  const newCellsCount = Number(prompt("Enter the cells amount per side"));
 
   if (!newCellsCount) return alert("Please enter a valid number");
 
-  if (newCellsCount > 100) {
+  if (newCellsCount > MAX_CELLS) {
     return alert("The maximum allowed number of cells is 100");
   }
 
-  if (newCellsCount < 8) {
+  if (newCellsCount < MIN_CELLS) {
     return alert("The minimum allowed number of cells is 8");
   }
 
@@ -74,4 +106,6 @@ setCellsAmount.addEventListener("click", () => {
   rerenderCells();
 });
 
+setRainbowMode.addEventListener("click", () => (currentMode = Mode.RAINBOW));
+resetMode.addEventListener("click", () => (currentMode = Mode.INITIAL));
 window.addEventListener("resize", setCellWidth);
