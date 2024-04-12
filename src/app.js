@@ -2,10 +2,12 @@ const INITIAL_CELLS_COUNT = 16 ** 2;
 const Mode = {
   INITIAL: "initial",
   RAINBOW: "rainbow",
+  FADING: "fading",
 };
 const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
 const setRainbowMode = document.querySelector(".set-rainbow-mode");
+const setFadingMode = document.querySelector(".set-fading-mode");
 const resetMode = document.querySelector(".reset-mode");
 let cellsCount = INITIAL_CELLS_COUNT;
 let currentMode = Mode.INITIAL;
@@ -43,28 +45,41 @@ function removeCells() {
   }
 }
 
+function getCssVariableValue(variable) {
+  return window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(variable);
+}
+
 function handleRainbowMode(cell) {
   const colorStep = 15;
-  const currentHue = Number(
-    window
-      .getComputedStyle(document.documentElement)
-      .getPropertyValue("--cell-hue")
-  );
+  const currentHue = Number(getCssVariableValue("--cell-hue"));
   const updatedHue = currentHue + colorStep;
   document.documentElement.style.setProperty("--cell-hue", updatedHue);
   cell.style.background = `hsl(${updatedHue}, 100%, 50%)`;
+}
+
+function handleFadingMode(cell) {
+  const cellLightness = Number(getCssVariableValue("--cell-lightness"));
+  const updatedCellLightness = cellLightness === 0 ? 90 : cellLightness - 10;
+  document.documentElement.style.setProperty(
+    "--cell-lightness",
+    updatedCellLightness
+  );
+  cell.style.background = `hsl(0, 0%, ${updatedCellLightness}%)`;
 }
 
 function highlight(event) {
   const { target } = event;
 
   if (target !== container) {
-    if (currentMode === Mode.INITIAL) {
-      target.style.background = "hsl(0, 0%, 80%)";
-    }
-
-    if (currentMode === Mode.RAINBOW) {
-      handleRainbowMode(target);
+    switch (currentMode) {
+      case Mode.INITIAL:
+        return (target.style.background = "hsl(0, 0%, 80%)");
+      case Mode.RAINBOW:
+        return handleRainbowMode(target);
+      case Mode.FADING:
+        return handleFadingMode(target);
     }
   }
 }
@@ -107,5 +122,6 @@ setCellsAmount.addEventListener("click", () => {
 });
 
 setRainbowMode.addEventListener("click", () => (currentMode = Mode.RAINBOW));
+setFadingMode.addEventListener("click", () => (currentMode = Mode.FADING));
 resetMode.addEventListener("click", () => (currentMode = Mode.INITIAL));
 window.addEventListener("resize", setCellWidth);
