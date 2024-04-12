@@ -57,7 +57,7 @@ window.addEventListener("mouseup", () => {
 
 setCellsAmount.addEventListener("click", () => {
   const newCellsCount = Number(
-    prompt("Input the cells amount no more than 100:")
+    prompt("Enter the cells amount per side")
   );
 
   if (!newCellsCount) return alert("Please enter a valid number");
