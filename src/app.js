@@ -1,6 +1,7 @@
 const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
 const setRainbowMode = document.querySelector(".set-rainbow-mode");
+const resetMode = document.querySelector(".reset-mode");
 let cellsCount = 16 ** 2;
 let currentMode = "initial";
 
@@ -53,6 +54,10 @@ function highlight(event) {
   const { target } = event;
 
   if (target !== container) {
+    if (currentMode === "initial") {
+      target.style.background = "hsl(0, 0%, 80%)";
+    }
+
     if (currentMode === "rainbow") {
       handleRainbowMode(target);
     }
@@ -95,4 +100,5 @@ setCellsAmount.addEventListener("click", () => {
 });
 
 setRainbowMode.addEventListener("click", () => (currentMode = "rainbow"));
+resetMode.addEventListener("click", () => (currentMode = "initial"));
 window.addEventListener("resize", setCellWidth);
