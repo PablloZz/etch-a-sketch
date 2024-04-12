@@ -3,12 +3,14 @@ const Mode = {
   INITIAL: "initial",
   RAINBOW: "rainbow",
   FADING: "fading",
+  ERASE: "erase",
 };
 const container = document.querySelector(".cells-container");
-const setCellsAmount = document.querySelector(".set-cells-amount");
-const setRainbowMode = document.querySelector(".set-rainbow-mode");
-const setFadingMode = document.querySelector(".set-fading-mode");
-const resetMode = document.querySelector(".reset-mode");
+const cellsAmountButton = document.querySelector(".cells-amount");
+const rainbowModeButton = document.querySelector(".rainbow-mode");
+const fadingModeButton = document.querySelector(".fading-mode");
+const eraseModeButton = document.querySelector(".erase-mode");
+const resetModeButton = document.querySelector(".reset-mode");
 let cellsCount = INITIAL_CELLS_COUNT;
 let currentMode = Mode.INITIAL;
 
@@ -80,6 +82,8 @@ function highlight(event) {
         return handleRainbowMode(target);
       case Mode.FADING:
         return handleFadingMode(target);
+      case Mode.ERASE:
+        return (target.style.background = "hsl(0, 0%, 100%)");
     }
   }
 }
@@ -102,7 +106,7 @@ window.addEventListener("mouseup", () => {
   children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
 });
 
-setCellsAmount.addEventListener("click", () => {
+cellsAmountButton.addEventListener("click", () => {
   const MAX_CELLS = 100;
   const MIN_CELLS = 8;
   const newCellsCount = Number(prompt("Enter the cells amount per side"));
@@ -121,7 +125,8 @@ setCellsAmount.addEventListener("click", () => {
   rerenderCells();
 });
 
-setRainbowMode.addEventListener("click", () => (currentMode = Mode.RAINBOW));
-setFadingMode.addEventListener("click", () => (currentMode = Mode.FADING));
-resetMode.addEventListener("click", () => (currentMode = Mode.INITIAL));
+rainbowModeButton.addEventListener("click", () => (currentMode = Mode.RAINBOW));
+fadingModeButton.addEventListener("click", () => (currentMode = Mode.FADING));
+eraseModeButton.addEventListener("click", () => (currentMode = Mode.ERASE));
+resetModeButton.addEventListener("click", () => (currentMode = Mode.INITIAL));
 window.addEventListener("resize", setCellWidth);
