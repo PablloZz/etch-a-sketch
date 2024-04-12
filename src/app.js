@@ -1,6 +1,8 @@
 const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
+const setRainbowMode = document.querySelector(".set-rainbow-mode");
 let cellsCount = 16 ** 2;
+let currentMode = "initial";
 
 function setCellWidth() {
   const containerWidth = Number.parseInt(
@@ -13,6 +15,7 @@ function setCellWidth() {
 function createCell() {
   const cell = document.createElement("div");
   cell.classList.add("cell");
+  cell.style.background = "hsl(0, 0%, 100%)";
   setCellWidth();
 
   return cell;
@@ -34,9 +37,26 @@ function removeCells() {
   }
 }
 
+function handleRainbowMode(cell) {
+  const colorStep = 15;
+  const currentHue = Number(
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue("--cell-hue")
+  );
+  const updatedHue = currentHue + colorStep;
+  document.documentElement.style.setProperty("--cell-hue", updatedHue);
+  cell.style.background = `hsl(${updatedHue}, 100%, 50%)`;
+}
+
 function highlight(event) {
   const { target } = event;
-  if (target !== container) target.classList.add("highlighted");
+
+  if (target !== container) {
+    if (currentMode === "rainbow") {
+      handleRainbowMode(target);
+    }
+  }
 }
 
 function rerenderCells() {
@@ -48,11 +68,13 @@ renderCells();
 
 container.addEventListener("mousedown", (event) => {
   highlight(event);
-  container.addEventListener("mousemove", highlight);
+  const children = Array.from(container.children);
+  children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
 });
 
 window.addEventListener("mouseup", () => {
-  container.removeEventListener("mousemove", highlight);
+  const children = Array.from(container.children);
+  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
 });
 
 setCellsAmount.addEventListener("click", () => {
@@ -72,4 +94,5 @@ setCellsAmount.addEventListener("click", () => {
   rerenderCells();
 });
 
+setRainbowMode.addEventListener("click", () => (currentMode = "rainbow"));
 window.addEventListener("resize", setCellWidth);
