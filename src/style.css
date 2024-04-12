@@ -1,6 +1,7 @@
 :root {
   --cell-width: 0px;
   --cell-hue: 0;
+  --cell-lightness: 100;
 }
 
 *,
