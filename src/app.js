@@ -1,9 +1,14 @@
+const INITIAL_CELLS_COUNT = 16 ** 2;
+const Mode = {
+  INITIAL: "initial",
+  RAINBOW: "rainbow",
+};
 const container = document.querySelector(".cells-container");
 const setCellsAmount = document.querySelector(".set-cells-amount");
 const setRainbowMode = document.querySelector(".set-rainbow-mode");
 const resetMode = document.querySelector(".reset-mode");
-let cellsCount = 16 ** 2;
-let currentMode = "initial";
+let cellsCount = INITIAL_CELLS_COUNT;
+let currentMode = Mode.INITIAL;
 
 function setCellWidth() {
   const containerWidth = Number.parseInt(
@@ -54,11 +59,11 @@ function highlight(event) {
   const { target } = event;
 
   if (target !== container) {
-    if (currentMode === "initial") {
+    if (currentMode === Mode.INITIAL) {
       target.style.background = "hsl(0, 0%, 80%)";
     }
 
-    if (currentMode === "rainbow") {
+    if (currentMode === Mode.RAINBOW) {
       handleRainbowMode(target);
     }
   }
@@ -83,15 +88,17 @@ window.addEventListener("mouseup", () => {
 });
 
 setCellsAmount.addEventListener("click", () => {
+  const MAX_CELLS = 100;
+  const MIN_CELLS = 8;
   const newCellsCount = Number(prompt("Enter the cells amount per side"));
 
   if (!newCellsCount) return alert("Please enter a valid number");
 
-  if (newCellsCount > 100) {
+  if (newCellsCount > MAX_CELLS) {
     return alert("The maximum allowed number of cells is 100");
   }
 
-  if (newCellsCount < 8) {
+  if (newCellsCount < MIN_CELLS) {
     return alert("The minimum allowed number of cells is 8");
   }
 
@@ -99,6 +106,6 @@ setCellsAmount.addEventListener("click", () => {
   rerenderCells();
 });
 
-setRainbowMode.addEventListener("click", () => (currentMode = "rainbow"));
-resetMode.addEventListener("click", () => (currentMode = "initial"));
+setRainbowMode.addEventListener("click", () => (currentMode = Mode.RAINBOW));
+resetMode.addEventListener("click", () => (currentMode = Mode.INITIAL));
 window.addEventListener("resize", setCellWidth);
