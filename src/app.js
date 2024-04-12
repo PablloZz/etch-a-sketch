@@ -11,6 +11,7 @@ const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
 const eraseModeButton = document.querySelector(".erase-mode");
 const resetModeButton = document.querySelector(".reset-mode");
+const clearFieldButton = document.querySelector(".clear-field");
 let cellsCount = INITIAL_CELLS_COUNT;
 let currentMode = Mode.INITIAL;
 
@@ -129,4 +130,5 @@ rainbowModeButton.addEventListener("click", () => (currentMode = Mode.RAINBOW));
 fadingModeButton.addEventListener("click", () => (currentMode = Mode.FADING));
 eraseModeButton.addEventListener("click", () => (currentMode = Mode.ERASE));
 resetModeButton.addEventListener("click", () => (currentMode = Mode.INITIAL));
+clearFieldButton.addEventListener("click", rerenderCells);
 window.addEventListener("resize", setCellWidth);
