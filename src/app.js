@@ -99,34 +99,35 @@ const handleEraseCellMode = (cell) => (cell.style.background = WHITE_COLOR);
 function handleEraseShapeMode(shape) {
   if (shape !== container) shape.remove();
 }
-function drawShape(event, element) {
+
+function drawShape(event, shape) {
   let { clientX: initialX, clientY: initialY } = event;
 
-  function handleMouseMove(event) {
+  function startDrawingShape(event) {
     const { clientX, clientY } = event;
     const differenceX = initialX - clientX;
     const differenceY = initialY - clientY;
     const absoluteDifferenceX = Math.abs(differenceX);
     const absoluteDifferenceY = Math.abs(differenceY);
 
-    element.style.left =
+    shape.style.left =
       absoluteDifferenceX === differenceX
         ? `${initialX - differenceX}px`
         : `${initialX}px`;
 
-    element.style.top =
+    shape.style.top =
       absoluteDifferenceY === differenceY
         ? `${initialY - differenceY}px`
         : `${initialY}px`;
 
-    element.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
+    shape.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
   }
 
-  container.addEventListener("mousemove", handleMouseMove);
+  container.addEventListener("mousemove", startDrawingShape);
   window.addEventListener("mouseup", () => {
-    container.removeEventListener("mousemove", handleMouseMove);
+    container.removeEventListener("mousemove", startDrawingShape);
   });
-  container.append(element);
+  container.append(shape);
 }
 
 function handleSquareMode(event) {
@@ -212,7 +213,7 @@ function stopDrawing() {
     });
   } else {
     const createdShape = children.at(-1);
-    createdShape.addEventListener("mouseenter", () => {
+    createdShape?.addEventListener("mouseenter", () => {
       if (gameSettings.currentMode === Mode.ERASE) {
         handleEraseShapeMode(createdShape);
       }
