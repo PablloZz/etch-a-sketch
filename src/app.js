@@ -94,14 +94,11 @@ function handleFadingMode(cell) {
   cell.style.background = `hsl(0, 0%, ${updatedCellLightness}%)`;
 }
 
-function handleEraseMode(item) {
-  if (gameSettings.grid) {
-    item.style.background = WHITE_COLOR;
-  } else {
-    item.remove();
-  }
-}
+const handleEraseCellMode = (cell) => (cell.style.background = WHITE_COLOR);
 
+function handleEraseShapeMode(shape) {
+  if (shape !== container) shape.remove();
+}
 function drawShape(event, element) {
   let { clientX: initialX, clientY: initialY } = event;
 
@@ -128,12 +125,6 @@ function drawShape(event, element) {
   container.addEventListener("mousemove", handleMouseMove);
   window.addEventListener("mouseup", () => {
     container.removeEventListener("mousemove", handleMouseMove);
-
-    element.addEventListener("mouseenter", () => {
-      if (gameSettings.currentMode === Mode.ERASE) {
-        handleEraseMode(element);
-      }
-    });
   });
   container.append(element);
 }
@@ -162,22 +153,14 @@ function highlight(event) {
       case Mode.FADING:
         return handleFadingMode(target);
       case Mode.ERASE:
-        return handleEraseMode(target);
-      case Mode.SQUARE:
-        return handleSquareMode(event);
-      case Mode.CIRCLE:
-        return handleCircleMode(event);
+        return handleEraseCellMode(target);
     }
   }
+}
 
-  if (!gameSettings.grid) {
-    switch (gameSettings.currentMode) {
-      case Mode.SQUARE:
-        return handleSquareMode(event);
-      case Mode.CIRCLE:
-        return handleCircleMode(event);
-    }
-  }
+function handleShapesModes(event) {
+  if (gameSettings.currentMode === Mode.SQUARE) handleSquareMode(event);
+  if (gameSettings.currentMode === Mode.CIRCLE) handleCircleMode(event);
 }
 
 function rerenderCells() {
@@ -211,16 +194,30 @@ function setCellsAmount() {
 }
 
 function startDrawing(event) {
-  highlight(event);
   if (gameSettings.grid) {
+    highlight(event);
     const children = Array.from(container.children);
     children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
+  } else {
+    handleShapesModes(event);
   }
 }
 
 function stopDrawing() {
   const children = Array.from(container.children);
-  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
+
+  if (gameSettings.grid) {
+    children.forEach((cell) => {
+      cell.removeEventListener("mouseenter", highlight);
+    });
+  } else {
+    const createdShape = children.at(-1);
+    createdShape.addEventListener("mouseenter", () => {
+      if (gameSettings.currentMode === Mode.ERASE) {
+        handleEraseShapeMode(createdShape);
+      }
+    });
+  }
 }
 
 function setShapeMode(mode) {
