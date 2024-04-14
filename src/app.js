@@ -60,11 +60,8 @@ function getCssVariableValue(variable) {
 }
 
 function handleRainbowMode(cell) {
-  const colorStep = 15;
-  const currentHue = Number(getCssVariableValue("--cell-hue"));
-  const updatedHue = currentHue + colorStep;
-  document.documentElement.style.setProperty("--cell-hue", updatedHue);
-  cell.style.background = `hsl(${updatedHue}, 100%, 50%)`;
+  const hue = Math.ceil(Math.random() * 360);
+  cell.style.background = `hsl(${hue}, 100%, 50%)`;
 }
 
 function handleFadingMode(cell) {
