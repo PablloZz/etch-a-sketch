@@ -4,6 +4,7 @@ const Mode = {
   RAINBOW: "rainbow",
   FADING: "fading",
   SQUARE: "square",
+  CIRCLE: "circle",
   ERASE: "erase",
 };
 const container = document.querySelector(".cells-container");
@@ -12,6 +13,7 @@ const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
 const eraseModeButton = document.querySelector(".erase-mode");
 const squareModeButton = document.querySelector(".square-mode");
+const circleModeButton = document.querySelector(".circle-mode");
 const initialModeButton = document.querySelector(".initial-mode");
 const clearFieldButton = document.querySelector(".clear-field");
 let gameSettings = {
@@ -84,15 +86,8 @@ function handleEraseMode(item) {
   }
 }
 
-function handleSquareMode(event) {
+function drawShape(event, element) {
   let { clientX: initialX, clientY: initialY } = event;
-  const square = document.createElement("div");
-  square.classList.add("square");
-  container.addEventListener("mousemove", handleMouseMove);
-  window.addEventListener("mouseup", () =>
-    container.removeEventListener("mousemove", handleMouseMove)
-  );
-  container.append(square);
 
   function handleMouseMove(event) {
     const { clientX, clientY } = event;
@@ -101,24 +96,48 @@ function handleSquareMode(event) {
     const absoluteDifferenceX = Math.abs(differenceX);
     const absoluteDifferenceY = Math.abs(differenceY);
 
-    square.style.left =
+    element.style.left =
       absoluteDifferenceX === differenceX
         ? `${initialX - differenceX}px`
         : `${initialX}px`;
 
-    square.style.top =
+    element.style.top =
       absoluteDifferenceY === differenceY
         ? `${initialY - differenceY}px`
         : `${initialY}px`;
 
-    square.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
+    element.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
   }
+
+  container.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", () => {
+    container.removeEventListener("mousemove", handleMouseMove);
+
+    element.addEventListener("mouseenter", () => {
+      if (gameSettings.currentMode === Mode.ERASE) {
+        handleEraseMode(element);
+      }
+    });
+  });
+  container.append(element);
+}
+
+function handleSquareMode(event) {
+  const square = document.createElement("div");
+  square.classList.add("square");
+  drawShape(event, square);
+}
+
+function handleCircleMode(event) {
+  const circle = document.createElement("div");
+  circle.classList.add("circle");
+  drawShape(event, circle);
 }
 
 function highlight(event) {
   const { target } = event;
 
-  if (target !== container || !gameSettings.grid) {
+  if (target !== container) {
     switch (gameSettings.currentMode) {
       case Mode.INITIAL:
         return (target.style.background = "hsl(0, 0%, 80%)");
@@ -130,6 +149,17 @@ function highlight(event) {
         return handleEraseMode(target);
       case Mode.SQUARE:
         return handleSquareMode(event);
+      case Mode.CIRCLE:
+        return handleCircleMode(event);
+    }
+  }
+
+  if (!gameSettings.grid) {
+    switch (gameSettings.currentMode) {
+      case Mode.SQUARE:
+        return handleSquareMode(event);
+      case Mode.CIRCLE:
+        return handleCircleMode(event);
     }
   }
 }
@@ -177,10 +207,10 @@ function stopDrawing() {
   children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
 }
 
-function setSquareMode() {
+function setShapeMode(mode) {
   gameSettings = {
     ...gameSettings,
-    currentMode: Mode.SQUARE,
+    currentMode: mode,
     grid: false,
   };
   const border = window.getComputedStyle(container).borderTop;
@@ -215,7 +245,8 @@ window.addEventListener("resize", setCellWidth);
 cellsAmountButton.addEventListener("click", setCellsAmount);
 rainbowModeButton.addEventListener("click", setRainbowMode);
 fadingModeButton.addEventListener("click", setFadingMode);
-squareModeButton.addEventListener("click", setSquareMode);
+squareModeButton.addEventListener("click", () => setShapeMode(Mode.SQUARE));
+circleModeButton.addEventListener("click", () => setShapeMode(Mode.CIRCLE));
 eraseModeButton.addEventListener("click", setEraseMode);
 initialModeButton.addEventListener("click", setInitialMode);
 clearFieldButton.addEventListener("click", clearField);
