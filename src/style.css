@@ -70,6 +70,7 @@ footer {
   min-height: 250px;
   width: 50vmin;
   height: 50vmin;
+  align-self: center;
   display: flex;
   flex-wrap: wrap;
   background: hsl(0, 0%, 100%);
