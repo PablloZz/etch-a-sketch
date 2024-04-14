@@ -1,4 +1,6 @@
-const INITIAL_CELLS_COUNT = 16 ** 2;
+const SQUARE_POWER = 2;
+const INITIAL_CELLS_COUNT = 16 ** SQUARE_POWER;
+const WHITE_COLOR = "hsl(0, 0%, 100%)";
 const Mode = {
   INITIAL: "initial",
   RAINBOW: "rainbow",
@@ -35,7 +37,7 @@ function setCellWidth() {
 function createCell() {
   const cell = document.createElement("div");
   cell.classList.add("cell");
-  cell.style.background = "hsl(0, 0%, 100%)";
+  cell.style.background = WHITE_COLOR;
   setCellWidth();
 
   return cell;
@@ -63,14 +65,28 @@ function getCssVariableValue(variable) {
     .getPropertyValue(variable);
 }
 
+function handleInitialMode(cell) {
+  const GRAY_COLOR = "hsl(0, 0%, 80%)";
+  cell.style.background = GRAY_COLOR;
+}
+
 function handleRainbowMode(cell) {
-  const hue = Math.ceil(Math.random() * 360);
+  const FULL_CIRCLE_DEGREES = 360;
+  const hue = Math.ceil(Math.random() * FULL_CIRCLE_DEGREES);
   cell.style.background = `hsl(${hue}, 100%, 50%)`;
 }
 
 function handleFadingMode(cell) {
+  const Lightness = {
+    STEP: 10,
+    MIN: 0,
+    MAX: 90,
+  };
   const cellLightness = Number(getCssVariableValue("--cell-lightness"));
-  const updatedCellLightness = cellLightness === 0 ? 90 : cellLightness - 10;
+  const updatedCellLightness =
+    cellLightness === Lightness.MIN
+      ? Lightness.MAX
+      : cellLightness - Lightness.STEP;
   document.documentElement.style.setProperty(
     "--cell-lightness",
     updatedCellLightness
@@ -80,7 +96,7 @@ function handleFadingMode(cell) {
 
 function handleEraseMode(item) {
   if (gameSettings.grid) {
-    item.style.background = "hsl(0, 0%, 100%)";
+    item.style.background = WHITE_COLOR;
   } else {
     item.remove();
   }
@@ -140,7 +156,7 @@ function highlight(event) {
   if (target !== container) {
     switch (gameSettings.currentMode) {
       case Mode.INITIAL:
-        return (target.style.background = "hsl(0, 0%, 80%)");
+        return handleInitialMode(target);
       case Mode.RAINBOW:
         return handleRainbowMode(target);
       case Mode.FADING:
@@ -190,7 +206,7 @@ function setCellsAmount() {
     container.style.cssText += `border-right: none; border-bottom: none`;
   }
 
-  gameSettings.cellsCount = newCellsCount ** 2;
+  gameSettings.cellsCount = newCellsCount ** SQUARE_POWER;
   rerenderCells();
 }
 
