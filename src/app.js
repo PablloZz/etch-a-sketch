@@ -12,13 +12,15 @@ const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
 const eraseModeButton = document.querySelector(".erase-mode");
 const squareModeButton = document.querySelector(".square-mode");
-const resetModeButton = document.querySelector(".reset-mode");
+const initialModeButton = document.querySelector(".initial-mode");
 const clearFieldButton = document.querySelector(".clear-field");
 let gameSettings = {
   cellsCount: INITIAL_CELLS_COUNT,
   currentMode: Mode.INITIAL,
   grid: true,
 };
+
+renderCells();
 
 function setCellWidth() {
   const containerWidth = Number.parseInt(
@@ -44,11 +46,11 @@ function renderCells() {
   }
 }
 
-const removeItem = (cellIndex) => container.children[cellIndex].remove();
+const removeItem = (itemIndex) => container.children[itemIndex].remove();
 
 function removeItems() {
-  const cellsCount = container.children.length;
-  for (let i = cellsCount - 1; i >= 0; i--) {
+  const itemsCount = container.children.length;
+  for (let i = itemsCount - 1; i >= 0; i--) {
     removeItem(i);
   }
 }
@@ -60,11 +62,8 @@ function getCssVariableValue(variable) {
 }
 
 function handleRainbowMode(cell) {
-  const colorStep = 15;
-  const currentHue = Number(getCssVariableValue("--cell-hue"));
-  const updatedHue = currentHue + colorStep;
-  document.documentElement.style.setProperty("--cell-hue", updatedHue);
-  cell.style.background = `hsl(${updatedHue}, 100%, 50%)`;
+  const hue = Math.ceil(Math.random() * 360);
+  cell.style.background = `hsl(${hue}, 100%, 50%)`;
 }
 
 function handleFadingMode(cell) {
@@ -85,30 +84,6 @@ function handleEraseMode(item) {
   }
 }
 
-function highlight(event) {
-  const { target } = event;
-
-  if (target !== container) {
-    switch (gameSettings.currentMode) {
-      case Mode.INITIAL:
-        return (target.style.background = "hsl(0, 0%, 80%)");
-      case Mode.RAINBOW:
-        return handleRainbowMode(target);
-      case Mode.FADING:
-        return handleFadingMode(target);
-      case Mode.ERASE:
-        return handleEraseMode(target);
-    }
-  }
-}
-
-function rerenderCells() {
-  removeItems();
-  renderCells();
-}
-
-renderCells();
-
 function handleSquareMode(event) {
   let { clientX: initialX, clientY: initialY } = event;
   const square = document.createElement("div");
@@ -126,37 +101,43 @@ function handleSquareMode(event) {
     const absoluteDifferenceX = Math.abs(differenceX);
     const absoluteDifferenceY = Math.abs(differenceY);
 
-    if (absoluteDifferenceX !== differenceX) {
-      square.style.left = `${initialX}px`;
-    }
+    square.style.left =
+      absoluteDifferenceX === differenceX
+        ? `${initialX - differenceX}px`
+        : `${initialX}px`;
 
-    if (absoluteDifferenceY !== differenceY) {
-      square.style.top = `${initialY}px`;
-    }
-
-    if (absoluteDifferenceX === differenceX) {
-      square.style.left = `${initialX - differenceX}px`;
-    }
-
-    if (absoluteDifferenceY === differenceY) {
-      square.style.top = `${initialY - differenceY}px`;
-    }
+    square.style.top =
+      absoluteDifferenceY === differenceY
+        ? `${initialY - differenceY}px`
+        : `${initialY}px`;
 
     square.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
   }
 }
 
-function initGame(event) {
-  if (gameSettings.currentMode === Mode.SQUARE) {
-    handleSquareMode(event);
-  } else {
-    highlight(event);
-    const children = Array.from(container.children);
-    children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
+function highlight(event) {
+  const { target } = event;
+
+  if (target !== container || !gameSettings.grid) {
+    switch (gameSettings.currentMode) {
+      case Mode.INITIAL:
+        return (target.style.background = "hsl(0, 0%, 80%)");
+      case Mode.RAINBOW:
+        return handleRainbowMode(target);
+      case Mode.FADING:
+        return handleFadingMode(target);
+      case Mode.ERASE:
+        return handleEraseMode(target);
+      case Mode.SQUARE:
+        return handleSquareMode(event);
+    }
   }
 }
 
-container.addEventListener("mousedown", initGame);
+function rerenderCells() {
+  removeItems();
+  renderCells();
+}
 
 function setCellsAmount() {
   const MAX_CELLS = 100;
@@ -173,8 +154,27 @@ function setCellsAmount() {
     return alert("The minimum allowed number of cells is 8");
   }
 
+  if (!gameSettings.grid) {
+    gameSettings.currentMode = Mode.INITIAL;
+    gameSettings.grid = true;
+    container.style.cssText += `border-right: none; border-bottom: none`;
+  }
+
   gameSettings.cellsCount = newCellsCount ** 2;
   rerenderCells();
+}
+
+function startDrawing(event) {
+  highlight(event);
+  if (gameSettings.grid) {
+    const children = Array.from(container.children);
+    children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
+  }
+}
+
+function stopDrawing() {
+  const children = Array.from(container.children);
+  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
 }
 
 function setSquareMode() {
@@ -188,42 +188,37 @@ function setSquareMode() {
   removeItems();
 }
 
-window.addEventListener("mouseup", () => {
-  const children = Array.from(container.children);
-  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
-});
-cellsAmountButton.addEventListener("click", setCellsAmount);
-rainbowModeButton.addEventListener(
-  "click",
-  () => (gameSettings.currentMode = Mode.RAINBOW)
-);
-fadingModeButton.addEventListener(
-  "click",
-  () => (gameSettings.currentMode = Mode.FADING)
-);
-squareModeButton.addEventListener("click", setSquareMode);
-eraseModeButton.addEventListener(
-  "click",
-  () => (gameSettings.currentMode = Mode.ERASE)
-);
-resetModeButton.addEventListener(
-  "click",
-  () => (gameSettings.currentMode = Mode.INITIAL)
-);
-clearFieldButton.addEventListener("click", () => {
+function clearField() {
   if (gameSettings.grid) {
     rerenderCells();
   } else {
     removeItems();
   }
-});
-[rainbowModeButton, fadingModeButton, resetModeButton].forEach((button) => {
-  button.addEventListener("click", () => {
-    if (!gameSettings.grid) {
-      rerenderCells();
-      gameSettings.grid = true;
-      container.style.cssText += `border-right: none; border-bottom: none`;
-    }
-  });
-});
+}
+
+function handleFieldGrid() {
+  if (!gameSettings.grid) {
+    rerenderCells();
+    gameSettings.grid = true;
+    container.style.cssText += `border-right: none; border-bottom: none`;
+  }
+}
+
+const setRainbowMode = () => (gameSettings.currentMode = Mode.RAINBOW);
+const setFadingMode = () => (gameSettings.currentMode = Mode.FADING);
+const setEraseMode = () => (gameSettings.currentMode = Mode.ERASE);
+const setInitialMode = () => (gameSettings.currentMode = Mode.INITIAL);
+
+container.addEventListener("mousedown", startDrawing);
+window.addEventListener("mouseup", stopDrawing);
 window.addEventListener("resize", setCellWidth);
+cellsAmountButton.addEventListener("click", setCellsAmount);
+rainbowModeButton.addEventListener("click", setRainbowMode);
+fadingModeButton.addEventListener("click", setFadingMode);
+squareModeButton.addEventListener("click", setSquareMode);
+eraseModeButton.addEventListener("click", setEraseMode);
+initialModeButton.addEventListener("click", setInitialMode);
+clearFieldButton.addEventListener("click", clearField);
+[rainbowModeButton, fadingModeButton, initialModeButton].forEach((button) => {
+  button.addEventListener("click", handleFieldGrid);
+});
