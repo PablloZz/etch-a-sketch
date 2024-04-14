@@ -12,7 +12,7 @@ const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
 const eraseModeButton = document.querySelector(".erase-mode");
 const squareModeButton = document.querySelector(".square-mode");
-const resetModeButton = document.querySelector(".reset-mode");
+const initialModeButton = document.querySelector(".initial-mode");
 const clearFieldButton = document.querySelector(".clear-field");
 let gameSettings = {
   cellsCount: INITIAL_CELLS_COUNT,
@@ -203,7 +203,7 @@ eraseModeButton.addEventListener(
   "click",
   () => (gameSettings.currentMode = Mode.ERASE)
 );
-resetModeButton.addEventListener(
+initialModeButton.addEventListener(
   "click",
   () => (gameSettings.currentMode = Mode.INITIAL)
 );
@@ -214,7 +214,7 @@ clearFieldButton.addEventListener("click", () => {
     removeItems();
   }
 });
-[rainbowModeButton, fadingModeButton, resetModeButton].forEach((button) => {
+[rainbowModeButton, fadingModeButton, initialModeButton].forEach((button) => {
   button.addEventListener("click", () => {
     if (!gameSettings.grid) {
       rerenderCells();
