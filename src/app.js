@@ -9,7 +9,7 @@ const Mode = {
   CIRCLE: "circle",
   ERASE: "erase",
 };
-const container = document.querySelector(".cells-container");
+const container = document.querySelector(".container");
 const cellsAmountButton = document.querySelector(".cells-amount");
 const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
@@ -101,24 +101,27 @@ function handleEraseShapeMode(shape) {
 }
 
 function drawShape(event, shape) {
-  let { clientX: initialX, clientY: initialY } = event;
+  const { clientX: initialClientX, clientY: initialClientY } = event;
+  const { left, top } = container.getBoundingClientRect();
+  const initialOffsetX = initialClientX - left;
+  const initialOffsetY = initialClientY - top;
 
   function startDrawingShape(event) {
     const { clientX, clientY } = event;
-    const differenceX = initialX - clientX;
-    const differenceY = initialY - clientY;
+    const differenceX = initialClientX - clientX;
+    const differenceY = initialClientY - clientY;
     const absoluteDifferenceX = Math.abs(differenceX);
     const absoluteDifferenceY = Math.abs(differenceY);
 
     shape.style.left =
       absoluteDifferenceX === differenceX
-        ? `${initialX - differenceX}px`
-        : `${initialX}px`;
+        ? `${initialOffsetX - differenceX}px`
+        : `${initialOffsetX}px`;
 
     shape.style.top =
       absoluteDifferenceY === differenceY
-        ? `${initialY - differenceY}px`
-        : `${initialY}px`;
+        ? `${initialOffsetY - differenceY}px`
+        : `${initialOffsetY}px`;
 
     shape.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
   }
