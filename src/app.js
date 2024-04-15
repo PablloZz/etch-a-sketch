@@ -130,7 +130,10 @@ function drawShape(event, shape) {
     "mouseup",
     () => {
       container.removeEventListener("mousemove", startDrawingShape);
-      shape.addEventListener("mousedown", () => handleEraseShapeMode(shape));
+      shape.addEventListener("mousedown", () => {
+        if (gameSettings.currentMode === Mode.ERASE)
+          handleEraseShapeMode(shape);
+      });
       shape.addEventListener("mouseenter", (event) => {
         const LEFT_BUTTON_CODE = 1;
         if (
