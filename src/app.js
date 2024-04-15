@@ -9,7 +9,7 @@ const Mode = {
   CIRCLE: "circle",
   ERASE: "erase",
 };
-const container = document.querySelector(".cells-container");
+const container = document.querySelector(".container");
 const cellsAmountButton = document.querySelector(".cells-amount");
 const rainbowModeButton = document.querySelector(".rainbow-mode");
 const fadingModeButton = document.querySelector(".fading-mode");
@@ -27,11 +27,10 @@ let gameSettings = {
 renderCells();
 
 function setCellWidth() {
-  const containerWidth = Number.parseInt(
-    window.getComputedStyle(container).width
-  );
-  const cellWidth = containerWidth / Math.sqrt(gameSettings.cellsCount) + "px";
-  document.documentElement.style.setProperty("--cell-width", cellWidth);
+  const { width: containerWidth } = container.getBoundingClientRect();
+  const pixelWidth = containerWidth / Math.sqrt(gameSettings.cellsCount);
+  const percentWidth = `${(pixelWidth / containerWidth) * 100}%`;
+  document.documentElement.style.setProperty("--cell-width", percentWidth);
 }
 
 function createCell() {
@@ -94,48 +93,43 @@ function handleFadingMode(cell) {
   cell.style.background = `hsl(0, 0%, ${updatedCellLightness}%)`;
 }
 
-function handleEraseMode(item) {
-  if (gameSettings.grid) {
-    item.style.background = WHITE_COLOR;
-  } else {
-    item.remove();
-  }
+const handleEraseCellMode = (cell) => (cell.style.background = WHITE_COLOR);
+
+function handleEraseShapeMode(shape) {
+  if (shape !== container) shape.remove();
 }
 
-function drawShape(event, element) {
-  let { clientX: initialX, clientY: initialY } = event;
+function drawShape(event, shape) {
+  const { clientX: initialClientX, clientY: initialClientY } = event;
+  const { left, top } = container.getBoundingClientRect();
+  const initialOffsetX = initialClientX - left;
+  const initialOffsetY = initialClientY - top;
 
-  function handleMouseMove(event) {
+  function startDrawingShape(event) {
     const { clientX, clientY } = event;
-    const differenceX = initialX - clientX;
-    const differenceY = initialY - clientY;
+    const differenceX = initialClientX - clientX;
+    const differenceY = initialClientY - clientY;
     const absoluteDifferenceX = Math.abs(differenceX);
     const absoluteDifferenceY = Math.abs(differenceY);
 
-    element.style.left =
+    shape.style.left =
       absoluteDifferenceX === differenceX
-        ? `${initialX - differenceX}px`
-        : `${initialX}px`;
+        ? `${initialOffsetX - differenceX}px`
+        : `${initialOffsetX}px`;
 
-    element.style.top =
+    shape.style.top =
       absoluteDifferenceY === differenceY
-        ? `${initialY - differenceY}px`
-        : `${initialY}px`;
+        ? `${initialOffsetY - differenceY}px`
+        : `${initialOffsetY}px`;
 
-    element.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
+    shape.style.cssText += `width: ${absoluteDifferenceX}px; height: ${absoluteDifferenceY}px`;
   }
 
-  container.addEventListener("mousemove", handleMouseMove);
+  container.addEventListener("mousemove", startDrawingShape);
   window.addEventListener("mouseup", () => {
-    container.removeEventListener("mousemove", handleMouseMove);
-
-    element.addEventListener("mouseenter", () => {
-      if (gameSettings.currentMode === Mode.ERASE) {
-        handleEraseMode(element);
-      }
-    });
+    container.removeEventListener("mousemove", startDrawingShape);
   });
-  container.append(element);
+  container.append(shape);
 }
 
 function handleSquareMode(event) {
@@ -162,22 +156,14 @@ function highlight(event) {
       case Mode.FADING:
         return handleFadingMode(target);
       case Mode.ERASE:
-        return handleEraseMode(target);
-      case Mode.SQUARE:
-        return handleSquareMode(event);
-      case Mode.CIRCLE:
-        return handleCircleMode(event);
+        return handleEraseCellMode(target);
     }
   }
+}
 
-  if (!gameSettings.grid) {
-    switch (gameSettings.currentMode) {
-      case Mode.SQUARE:
-        return handleSquareMode(event);
-      case Mode.CIRCLE:
-        return handleCircleMode(event);
-    }
-  }
+function handleShapesModes(event) {
+  if (gameSettings.currentMode === Mode.SQUARE) handleSquareMode(event);
+  if (gameSettings.currentMode === Mode.CIRCLE) handleCircleMode(event);
 }
 
 function rerenderCells() {
@@ -211,16 +197,30 @@ function setCellsAmount() {
 }
 
 function startDrawing(event) {
-  highlight(event);
   if (gameSettings.grid) {
+    highlight(event);
     const children = Array.from(container.children);
     children.forEach((cell) => cell.addEventListener("mouseenter", highlight));
+  } else {
+    handleShapesModes(event);
   }
 }
 
 function stopDrawing() {
   const children = Array.from(container.children);
-  children.forEach((cell) => cell.removeEventListener("mouseenter", highlight));
+
+  if (gameSettings.grid) {
+    children.forEach((cell) => {
+      cell.removeEventListener("mouseenter", highlight);
+    });
+  } else {
+    const createdShape = children.at(-1);
+    createdShape?.addEventListener("mouseenter", () => {
+      if (gameSettings.currentMode === Mode.ERASE) {
+        handleEraseShapeMode(createdShape);
+      }
+    });
+  }
 }
 
 function setShapeMode(mode) {
@@ -257,7 +257,6 @@ const setInitialMode = () => (gameSettings.currentMode = Mode.INITIAL);
 
 container.addEventListener("mousedown", startDrawing);
 window.addEventListener("mouseup", stopDrawing);
-window.addEventListener("resize", setCellWidth);
 cellsAmountButton.addEventListener("click", setCellsAmount);
 rainbowModeButton.addEventListener("click", setRainbowMode);
 fadingModeButton.addEventListener("click", setFadingMode);

@@ -65,7 +65,8 @@ footer {
   background: hsl(195, 91%, 50%);
 }
 
-.cells-container {
+.container {
+  position: relative;
   min-width: 250px;
   min-height: 250px;
   width: 50vmin;
@@ -93,9 +94,10 @@ footer {
 
 .square,
 .circle {
-  position: fixed;
+  position: absolute;
   background: hsl(0, 0%, 80%);
   border: 1px solid hsl(0, 0%, 0%);
+  user-select: none;
 }
 
 .circle {
