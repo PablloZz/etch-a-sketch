@@ -126,18 +126,23 @@ function drawShape(event, shape) {
   }
 
   container.addEventListener("mousemove", startDrawingShape);
-  window.addEventListener("mouseup", () => {
-    container.removeEventListener("mousemove", startDrawingShape);
-    shape.addEventListener("mouseenter", (event) => {
-      const LEFT_BUTTON_CODE = 1;
-      if (
-        gameSettings.currentMode === Mode.ERASE &&
-        event.buttons === LEFT_BUTTON_CODE
-      ) {
-        handleEraseShapeMode(shape);
-      }
-    });
-  });
+  window.addEventListener(
+    "mouseup",
+    () => {
+      container.removeEventListener("mousemove", startDrawingShape);
+      shape.addEventListener("mousedown", () => handleEraseShapeMode(shape));
+      shape.addEventListener("mouseenter", (event) => {
+        const LEFT_BUTTON_CODE = 1;
+        if (
+          gameSettings.currentMode === Mode.ERASE &&
+          event.buttons === LEFT_BUTTON_CODE
+        ) {
+          handleEraseShapeMode(shape);
+        }
+      });
+    },
+    { once: true }
+  );
   container.append(shape);
 }
 
