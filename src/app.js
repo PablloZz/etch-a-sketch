@@ -128,6 +128,15 @@ function drawShape(event, shape) {
   container.addEventListener("mousemove", startDrawingShape);
   window.addEventListener("mouseup", () => {
     container.removeEventListener("mousemove", startDrawingShape);
+    shape.addEventListener("mouseenter", (event) => {
+      const LEFT_BUTTON_CODE = 1;
+      if (
+        gameSettings.currentMode === Mode.ERASE &&
+        event.buttons === LEFT_BUTTON_CODE
+      ) {
+        handleEraseShapeMode(shape);
+      }
+    });
   });
   container.append(shape);
 }
@@ -207,18 +216,10 @@ function startDrawing(event) {
 }
 
 function stopDrawing() {
-  const children = Array.from(container.children);
-
   if (gameSettings.grid) {
+    const children = Array.from(container.children);
     children.forEach((cell) => {
       cell.removeEventListener("mouseenter", highlight);
-    });
-  } else {
-    const createdShape = children.at(-1);
-    createdShape?.addEventListener("mouseenter", () => {
-      if (gameSettings.currentMode === Mode.ERASE) {
-        handleEraseShapeMode(createdShape);
-      }
     });
   }
 }
