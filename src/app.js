@@ -27,11 +27,10 @@ let gameSettings = {
 renderCells();
 
 function setCellWidth() {
-  const containerWidth = Number.parseInt(
-    window.getComputedStyle(container).width
-  );
-  const cellWidth = containerWidth / Math.sqrt(gameSettings.cellsCount) + "px";
-  document.documentElement.style.setProperty("--cell-width", cellWidth);
+  const { width: containerWidth } = container.getBoundingClientRect();
+  const pixelWidth = containerWidth / Math.sqrt(gameSettings.cellsCount);
+  const percentWidth = `${(pixelWidth / containerWidth) * 100}%`;
+  document.documentElement.style.setProperty("--cell-width", percentWidth);
 }
 
 function createCell() {
@@ -258,7 +257,6 @@ const setInitialMode = () => (gameSettings.currentMode = Mode.INITIAL);
 
 container.addEventListener("mousedown", startDrawing);
 window.addEventListener("mouseup", stopDrawing);
-window.addEventListener("resize", setCellWidth);
 cellsAmountButton.addEventListener("click", setCellsAmount);
 rainbowModeButton.addEventListener("click", setRainbowMode);
 fadingModeButton.addEventListener("click", setFadingMode);
